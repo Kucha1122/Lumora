@@ -21,3 +21,6 @@ secrets.json
 *.key
 *.pem
 k8s/secrets.yaml
+
+# Reference material copied in from another project — local only, not part of this repo.
+.claude/rules/deploy-instructions-template.md
