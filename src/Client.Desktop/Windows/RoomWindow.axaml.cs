@@ -21,6 +21,7 @@ public partial class RoomWindow : Window
     public RoomWindow(RoomSessionService session, LumoraApiClient api, ActiveRoomStore activeRoomStore)
     {
         InitializeComponent();
+        Icon = TrayIconFactory.BrandIcon;
         this.session = session;
         this.api = api;
         this.activeRoomStore = activeRoomStore;
