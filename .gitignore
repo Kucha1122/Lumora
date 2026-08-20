@@ -1,0 +1,22 @@
+bin/
+obj/
+.vs/
+*.user
+.blobs/
+
+# Secrets — connection strings, peppers, API keys. Local dev config belongs in
+# `dotnet user-secrets` (see src/Api/README-secrets.md), not in tracked files.
+# Production config comes from Kubernetes Secrets, never from the repo.
+appsettings.*.json
+!appsettings.json
+!appsettings.Development.json
+appsettings.Local.json
+appsettings.*.local.json
+secrets.json
+*.secrets.json
+.env
+.env.*
+*.pfx
+*.p12
+*.key
+*.pem
