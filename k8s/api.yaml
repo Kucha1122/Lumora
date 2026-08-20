@@ -4,6 +4,7 @@ metadata:
   name: lumora-api-blobs
   namespace: lumora
 spec:
+  storageClassName: local-path
   accessModes: ["ReadWriteOnce"]
   resources:
     requests:
