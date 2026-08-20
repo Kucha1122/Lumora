@@ -1,0 +1,22 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Lumora.Client.Desktop.Windows.DriveWindow"
+        Title="Drive" Width="480" Height="540"
+        WindowStartupLocation="CenterScreen">
+    <DockPanel Margin="16">
+        <StackPanel DockPanel.Dock="Top" Spacing="2" Margin="0,0,0,12">
+            <TextBlock Classes="heading" Text="Drive" />
+            <TextBlock Name="RoomLabel" Classes="muted" />
+        </StackPanel>
+
+        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="0,12,0,0" Spacing="8">
+            <Button Name="UploadButton" Content="Wyślij plik…" Classes="accent" Click="OnUploadClicked" />
+            <Button Name="DownloadButton" Content="Pobierz" Click="OnDownloadClicked" />
+            <Button Name="DeleteButton" Content="Usuń" Click="OnDeleteClicked" />
+        </StackPanel>
+
+        <Border Classes="card" Padding="6">
+            <ListBox Name="FilesList" />
+        </Border>
+    </DockPanel>
+</Window>

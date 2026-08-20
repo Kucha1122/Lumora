@@ -1,0 +1,61 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:windows="clr-namespace:Lumora.Client.Desktop.Windows"
+        x:Class="Lumora.Client.Desktop.Windows.ClipboardHistoryWindow"
+        Title="Historia schowka" Width="440" Height="540"
+        WindowStartupLocation="CenterScreen">
+    <DockPanel Margin="16">
+        <StackPanel DockPanel.Dock="Top" Spacing="2" Margin="0,0,0,12">
+            <TextBlock Name="RoomLabel" Classes="heading" />
+            <TextBlock Classes="muted" Text="Kliknij wpis, żeby skopiować go do schowka." />
+        </StackPanel>
+
+        <Button DockPanel.Dock="Bottom" Name="ClearAllButton" Content="Wyczyść historię"
+                Margin="0,12,0,0" Click="OnClearAllClicked" />
+
+        <Border Classes="card" Padding="6">
+            <ScrollViewer>
+                <!-- ItemsControl, not ListBox: this list has no concept of "selection" — a
+                     click on a row is an immediate action (copy), not selecting an item.
+                     Using ListBox's SelectionChanged for that was the actual source of the
+                     duplicate-copy bug: replacing ItemsSource on every history update (which
+                     a self-triggered copy itself causes) resets the ListBox's selection,
+                     which can re-raise SelectionChanged outside the render-time guard meant
+                     to suppress it, copying the item again — and again, each time it re-renders. -->
+                <ItemsControl Name="EntriesList">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate DataType="windows:ClipboardHistoryRow">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <Button Grid.Column="0" Tag="{Binding EntryId}" Click="OnRowCopyClicked"
+                                        HorizontalContentAlignment="Left" HorizontalAlignment="Stretch"
+                                        Background="Transparent" BorderThickness="0">
+                                    <Grid ColumnDefinitions="36,*">
+                                        <!-- Every row shows something in this fixed slot — an image thumbnail
+                                             or, for text, a generic document glyph — so the timestamp/preview
+                                             column always starts at the same x regardless of entry kind. -->
+                                        <Border Grid.Column="0" Width="36" Height="36" CornerRadius="4" ClipToBounds="True"
+                                                Background="{DynamicResource LumoraSurfaceAlt}">
+                                            <Panel>
+                                                <Image Source="{Binding Thumbnail}"
+                                                       IsVisible="{Binding Thumbnail, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                                       Stretch="UniformToFill" Width="36" Height="36" />
+                                                <TextBlock Text="📄" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                           IsVisible="{Binding Thumbnail, Converter={x:Static ObjectConverters.IsNull}}" />
+                                            </Panel>
+                                        </Border>
+                                        <StackPanel Grid.Column="1" Margin="8,0,0,0" VerticalAlignment="Center" Spacing="1">
+                                            <TextBlock Classes="muted" Text="{Binding Timestamp}" FontSize="11" />
+                                            <TextBlock Text="{Binding Preview}" TextTrimming="CharacterEllipsis" />
+                                        </StackPanel>
+                                    </Grid>
+                                </Button>
+                                <Button Grid.Column="1" Content="🗑" Tag="{Binding EntryId}" Click="OnDeleteEntryClicked"
+                                        Padding="8,4" Margin="8,0,0,0" />
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </Border>
+    </DockPanel>
+</Window>

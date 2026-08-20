@@ -1,0 +1,72 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:windows="clr-namespace:Lumora.Client.Desktop.Windows"
+        x:Class="Lumora.Client.Desktop.Windows.RoomWindow"
+        Title="Przestrzeń" Width="440" Height="520"
+        WindowStartupLocation="CenterScreen">
+    <Grid Margin="20" RowDefinitions="Auto,*,Auto">
+        <StackPanel Grid.Row="0" Spacing="0" Margin="0,0,0,16">
+            <TextBlock Classes="heading" Text="Przestrzeń" Margin="0,0,0,12" />
+
+            <StackPanel Orientation="Horizontal">
+                <Button Name="JoinModeButton" Content="Dołącz" Classes="tab active" Click="OnJoinModeClicked" />
+                <Button Name="CreateModeButton" Content="Utwórz nową" Classes="tab" Click="OnCreateModeClicked" />
+            </StackPanel>
+            <Border Classes="divider" />
+        </StackPanel>
+
+        <!-- Join: full-width, browsable room directory -->
+        <ListBox Grid.Row="1" Name="RoomsList">
+            <ListBox.Styles>
+                <Style Selector="ListBoxItem">
+                    <Setter Property="CornerRadius" Value="0" />
+                    <Setter Property="Padding" Value="4,6" />
+                    <Setter Property="Margin" Value="0" />
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                </Style>
+                <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+                    <Setter Property="Background" Value="Transparent" />
+                </Style>
+            </ListBox.Styles>
+            <ListBox.ItemTemplate>
+                <DataTemplate DataType="windows:RoomListRow">
+                    <Grid ColumnDefinitions="Auto,*,Auto" Margin="0,4">
+                        <TextBlock Grid.Column="0" Text="{Binding Icon}" VerticalAlignment="Center" Margin="0,0,10,0" />
+                        <TextBlock Grid.Column="1" Text="{Binding DisplayName}" VerticalAlignment="Center" />
+                        <TextBlock Grid.Column="2" Text="✓ Aktualna" Classes="muted" VerticalAlignment="Center"
+                                   IsVisible="{Binding IsActive}" />
+                        <Button Grid.Column="2" Content="Dołącz" Tag="{Binding}" Click="OnRoomJoinClicked" Padding="12,6"
+                                IsVisible="{Binding !IsActive}" />
+                    </Grid>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+
+        <!-- Create-room form (Create tab) -->
+        <StackPanel Grid.Row="1" Name="CreatePanel" Spacing="12" IsVisible="False">
+            <StackPanel Spacing="4">
+                <TextBlock Classes="muted" Text="Nazwa wyświetlana" />
+                <TextBox Name="DisplayNameBox" PlaceholderText="np. Rodzina" />
+            </StackPanel>
+
+            <StackPanel Spacing="4">
+                <TextBlock Classes="muted" Text="Slug przestrzeni" />
+                <TextBox Name="SlugBox" PlaceholderText="np. rodzina" />
+            </StackPanel>
+
+            <CheckBox Name="PrivateCheckBox" Content="Prywatna (wymaga hasła)" />
+
+            <StackPanel Name="CreatePasswordPanel" Spacing="4" IsVisible="False">
+                <TextBlock Classes="muted" Text="Hasło" />
+                <TextBox Name="CreatePasswordBox" PasswordChar="•" />
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+                <Button Name="CreateSubmitButton" Content="Utwórz i dołącz" Classes="accent" Click="OnCreateSubmitClicked" />
+            </StackPanel>
+        </StackPanel>
+
+        <TextBlock Grid.Row="2" Name="ErrorText" Foreground="{StaticResource LumoraDanger}"
+                   TextWrapping="Wrap" IsVisible="False" Margin="0,12,0,0" />
+    </Grid>
+</Window>

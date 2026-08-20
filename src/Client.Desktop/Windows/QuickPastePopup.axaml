@@ -1,0 +1,38 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:windows="clr-namespace:Lumora.Client.Desktop.Windows"
+        x:Class="Lumora.Client.Desktop.Windows.QuickPastePopup"
+        SystemDecorations="None" ShowInTaskbar="False" Topmost="True" CanResize="False"
+        SizeToContent="WidthAndHeight" WindowStartupLocation="Manual"
+        Background="Transparent">
+    <Border Classes="card" Padding="6">
+        <StackPanel Spacing="2">
+            <TextBlock Classes="muted" Text="↑↓ wybierz · Enter wklej · Esc anuluj" Margin="8,4" />
+            <ListBox Name="EntriesList" Width="360" MaxHeight="260">
+                <ListBox.ItemTemplate>
+                    <DataTemplate DataType="windows:QuickPasteRow">
+                        <Grid ColumnDefinitions="32,*">
+                            <!-- Every row shows something in this fixed slot — an image thumbnail or, for
+                                 text, a generic document glyph — so the timestamp/preview column always
+                                 starts at the same x regardless of entry kind. -->
+                            <Border Grid.Column="0" Width="32" Height="32" CornerRadius="4" ClipToBounds="True"
+                                    Background="{DynamicResource LumoraSurfaceAlt}">
+                                <Panel>
+                                    <Image Source="{Binding Thumbnail}"
+                                           IsVisible="{Binding Thumbnail, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                           Stretch="UniformToFill" Width="32" Height="32" />
+                                    <TextBlock Text="📄" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                               IsVisible="{Binding Thumbnail, Converter={x:Static ObjectConverters.IsNull}}" />
+                                </Panel>
+                            </Border>
+                            <StackPanel Grid.Column="1" Margin="8,0,0,0" VerticalAlignment="Center" Spacing="1">
+                                <TextBlock Classes="muted" Text="{Binding Timestamp}" FontSize="10" />
+                                <TextBlock Text="{Binding Preview}" TextTrimming="CharacterEllipsis" />
+                            </StackPanel>
+                        </Grid>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </StackPanel>
+    </Border>
+</Window>

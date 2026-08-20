@@ -1,0 +1,143 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Lumora.Client.Desktop.App"
+             RequestedThemeVariant="Dark">
+
+    <Application.Resources>
+        <SolidColorBrush x:Key="LumoraBg" Color="#14141C" />
+        <SolidColorBrush x:Key="LumoraSurface" Color="#1E1E2A" />
+        <SolidColorBrush x:Key="LumoraSurfaceAlt" Color="#26263569" />
+        <SolidColorBrush x:Key="LumoraBorder" Color="#33334A" />
+        <SolidColorBrush x:Key="LumoraAccent" Color="#7C6CF0" />
+        <SolidColorBrush x:Key="LumoraAccentHover" Color="#8F80F4" />
+        <SolidColorBrush x:Key="LumoraText" Color="#EDEDF5" />
+        <SolidColorBrush x:Key="LumoraTextMuted" Color="#9A9AB0" />
+        <SolidColorBrush x:Key="LumoraDanger" Color="#F2555A" />
+    </Application.Resources>
+
+    <Application.Styles>
+        <FluentTheme />
+
+        <!-- Every window in this app shares this look — dark surface, rounded controls,
+             one accent color. Defined once here instead of per-window so nothing drifts. -->
+        <Style Selector="Window">
+            <Setter Property="Background" Value="{StaticResource LumoraBg}" />
+            <Setter Property="TransparencyLevelHint" Value="None" />
+        </Style>
+
+        <Style Selector="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource LumoraText}" />
+        </Style>
+
+        <Style Selector="TextBlock.muted">
+            <Setter Property="Foreground" Value="{StaticResource LumoraTextMuted}" />
+            <Setter Property="FontSize" Value="12" />
+        </Style>
+
+        <Style Selector="TextBlock.heading">
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+
+        <Style Selector="Button">
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="14,8" />
+            <Setter Property="Background" Value="{StaticResource LumoraSurfaceAlt}" />
+            <Setter Property="Foreground" Value="{StaticResource LumoraText}" />
+            <Setter Property="BorderBrush" Value="{StaticResource LumoraBorder}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+
+        <Style Selector="Button:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource LumoraBorder}" />
+        </Style>
+
+        <Style Selector="Button.accent">
+            <Setter Property="Background" Value="{StaticResource LumoraAccent}" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+
+        <Style Selector="Button.accent:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource LumoraAccentHover}" />
+        </Style>
+
+        <Style Selector="TextBox">
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Background" Value="{StaticResource LumoraSurfaceAlt}" />
+            <Setter Property="BorderBrush" Value="{StaticResource LumoraBorder}" />
+            <Setter Property="Foreground" Value="{StaticResource LumoraText}" />
+            <Setter Property="Padding" Value="10,8" />
+            <Setter Property="CaretBrush" Value="{StaticResource LumoraAccent}" />
+            <Setter Property="SelectionBrush" Value="{StaticResource LumoraAccent}" />
+        </Style>
+
+        <Style Selector="TextBox:focus /template/ Border#PART_BorderElement">
+            <Setter Property="BorderBrush" Value="{StaticResource LumoraAccent}" />
+        </Style>
+
+        <Style Selector="CheckBox">
+            <Setter Property="Foreground" Value="{StaticResource LumoraText}" />
+        </Style>
+
+        <Style Selector="ListBox">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+        </Style>
+
+        <Style Selector="ListBoxItem">
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Padding" Value="10,8" />
+            <Setter Property="Margin" Value="0,2" />
+        </Style>
+
+        <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource LumoraSurfaceAlt}" />
+        </Style>
+
+        <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource LumoraAccent}" />
+        </Style>
+
+        <Style Selector="Border.card">
+            <Setter Property="Background" Value="{StaticResource LumoraSurface}" />
+            <Setter Property="BorderBrush" Value="{StaticResource LumoraBorder}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="12" />
+            <Setter Property="Padding" Value="16" />
+        </Style>
+
+        <!-- Tab strip — flat text + accent underline, not a boxed button, so "Dołącz"/"Utwórz
+             nową" reads as a mode switch rather than two competing actions. -->
+        <Style Selector="Button.tab">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0,0,0,2" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="CornerRadius" Value="0" />
+            <Setter Property="Foreground" Value="{StaticResource LumoraTextMuted}" />
+            <Setter Property="Padding" Value="4,8" />
+            <Setter Property="Margin" Value="0,0,20,0" />
+            <Setter Property="FontWeight" Value="Normal" />
+        </Style>
+
+        <Style Selector="Button.tab:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+
+        <Style Selector="Button.tab:pointerover">
+            <Setter Property="Foreground" Value="{StaticResource LumoraText}" />
+        </Style>
+
+        <Style Selector="Button.tab.active">
+            <Setter Property="BorderBrush" Value="{StaticResource LumoraAccent}" />
+            <Setter Property="Foreground" Value="{StaticResource LumoraText}" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+
+        <Style Selector="Border.divider">
+            <Setter Property="Background" Value="{StaticResource LumoraBorder}" />
+            <Setter Property="Height" Value="1" />
+        </Style>
+    </Application.Styles>
+</Application>
