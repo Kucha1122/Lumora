@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using Lumora.Client.Core.Clipboard;
 using Lumora.Client.Core.Crypto;
 using Lumora.Client.Core.Rooms;
@@ -22,6 +23,12 @@ public sealed class ClipboardSyncEngine(
 {
     private readonly LoopGuard loopGuard = new();
     private Guid ownDeviceId;
+
+    // Holding a copy hotkey (e.g. Ctrl+C) makes the source app re-fire its own copy handler
+    // on every OS key-repeat tick — each is a genuine, separate clipboard write with identical
+    // content, not our own echo, so LoopGuard (which only catches writes *we* just made) never
+    // sees it. Without this, one held keypress floods the room with dozens of duplicate entries.
+    private byte[]? lastLocalContentHash;
 
     public ClipboardHistoryStore History { get; } = new();
 
@@ -83,6 +90,7 @@ public sealed class ClipboardSyncEngine(
         realtime.ClipboardEntryDeleted -= OnRemoteEntryDeletedAsync;
         realtime.ClipboardCleared -= OnRemoteClearedAsync;
         History.Clear();
+        lastLocalContentHash = null;
     }
 
     private Task OnRemoteEntryDeletedAsync(ClipboardEntryDeletedEvent evt)
@@ -134,6 +142,14 @@ public sealed class ClipboardSyncEngine(
         {
             return;
         }
+
+        var contentHash = SHA256.HashData(content.Data);
+        if (lastLocalContentHash is not null && CryptographicOperations.FixedTimeEquals(lastLocalContentHash, contentHash))
+        {
+            return;
+        }
+
+        lastLocalContentHash = contentHash;
 
         var room = activeRoom.ActiveRoom;
         if (room is null)
