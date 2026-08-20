@@ -1,0 +1,80 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: lumora-api-blobs
+  namespace: lumora
+spec:
+  accessModes: ["ReadWriteOnce"]
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lumora-api
+  namespace: lumora
+  labels:
+    app: lumora-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: lumora-api
+  template:
+    metadata:
+      labels:
+        app: lumora-api
+    spec:
+      imagePullSecrets:
+        - name: ghcr-pull
+      containers:
+        - name: lumora-api
+          image: ghcr.io/kucha1122/lumora-api:latest
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - secretRef:
+                name: lumora-api-secrets
+          env:
+            - name: BlobStore__RootPath
+              value: /data/blobs
+          volumeMounts:
+            - name: blobs
+              mountPath: /data/blobs
+          resources:
+            requests:
+              cpu: 200m
+              memory: 256Mi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 20
+      volumes:
+        - name: blobs
+          persistentVolumeClaim:
+            claimName: lumora-api-blobs
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: lumora-api
+  namespace: lumora
+spec:
+  selector:
+    app: lumora-api
+  ports:
+    - port: 80
+      targetPort: 8080
+  type: ClusterIP

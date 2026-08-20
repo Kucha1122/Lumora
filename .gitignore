@@ -20,3 +20,4 @@ secrets.json
 *.p12
 *.key
 *.pem
+k8s/secrets.yaml

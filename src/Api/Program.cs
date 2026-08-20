@@ -82,9 +82,18 @@ using (var seedScope = app.Services.CreateScope())
     }
 }
 
-app.UseHttpsRedirection();
+// Skipped in Production: TLS terminates at the Tailscale proxy in front of the pod, so
+// Kestrel inside the cluster only ever sees plain HTTP — redirecting it to HTTPS would
+// just loop, since the pod doesn't have (and doesn't need) a cert of its own.
+if (!app.Environment.IsProduction())
+{
+    app.UseHttpsRedirection();
+}
+
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.MapGet("/healthz", () => Results.Ok());
 
 app.MapRoomEndpoints();
 app.MapClipboardEndpoints();
