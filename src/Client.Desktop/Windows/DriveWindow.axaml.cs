@@ -17,6 +17,7 @@ public partial class DriveWindow : Window
     public DriveWindow(LumoraApiClient api, ActiveRoomStore activeRoom, Guid deviceId)
     {
         InitializeComponent();
+        Icon = TrayIconFactory.BrandIcon;
         this.api = api;
         this.activeRoom = activeRoom;
         this.deviceId = deviceId;

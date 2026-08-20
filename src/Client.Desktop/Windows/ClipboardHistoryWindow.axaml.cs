@@ -25,6 +25,7 @@ public partial class ClipboardHistoryWindow : Window
     public ClipboardHistoryWindow(ClipboardHistoryStore history, ClipboardSyncEngine syncEngine, ActiveRoomStore activeRoom)
     {
         InitializeComponent();
+        Icon = TrayIconFactory.BrandIcon;
         this.history = history;
         this.syncEngine = syncEngine;
         this.activeRoom = activeRoom;

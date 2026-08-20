@@ -19,6 +19,7 @@ public partial class PasswordPromptWindow : Window
     public PasswordPromptWindow(string roomDisplayName, Func<string, Task<string?>> onSubmit)
     {
         InitializeComponent();
+        Icon = TrayIconFactory.BrandIcon;
         this.onSubmit = onSubmit;
         PromptText.Text = $"Hasło do „{roomDisplayName}”";
         Opened += (_, _) => PasswordBox.Focus();
