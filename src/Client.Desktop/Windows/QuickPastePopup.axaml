@@ -2,7 +2,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:windows="clr-namespace:Lumora.Client.Desktop.Windows"
         x:Class="Lumora.Client.Desktop.Windows.QuickPastePopup"
-        SystemDecorations="None" ShowInTaskbar="False" Topmost="True" CanResize="False"
+        WindowDecorations="None" ShowInTaskbar="False" Topmost="True" CanResize="False"
         SizeToContent="WidthAndHeight" WindowStartupLocation="Manual"
         Background="Transparent">
     <Border Classes="card" Padding="6">

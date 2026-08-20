@@ -11,6 +11,11 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <!-- AVLN3001 fires because these Windows have no public parameterless constructor — by
+         design (see WindowSlot<T>/ShowSingleton in App.axaml.cs): they're always built in code
+         with DI dependencies, never instantiated by Avalonia's XAML runtime loader, so the
+         "won't be reachable via runtime loader" warning doesn't describe an actual problem. -->
+    <NoWarn>$(NoWarn);AVLN3001</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
