@@ -1,0 +1,33 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+
+env:
+  IMAGE: ghcr.io/kucha1122/lumora-api
+  NAMESPACE: lumora
+  DEPLOYMENT: lumora-api
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Build and push image
+        run: |
+          docker build -f src/Api/Dockerfile -t $IMAGE:${{ github.sha }} -t $IMAGE:latest .
+          docker push $IMAGE:${{ github.sha }}
+          docker push $IMAGE:latest
+
+      - name: Apply manifests
+        run: kubectl apply -f k8s/namespace.yaml -f k8s/api.yaml
+
+      - name: Roll out new image
+        run: |
+          kubectl -n $NAMESPACE set image deployment/$DEPLOYMENT lumora-api=$IMAGE:${{ github.sha }}
+          kubectl -n $NAMESPACE rollout status deployment/$DEPLOYMENT --timeout=120s
