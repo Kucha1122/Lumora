@@ -38,28 +38,36 @@ dotnet ef database update -p src/Infrastructure -s src/Api ^
 
 ## 4. Publiczny dostęp przez Tailscale
 
-Hostname `k3s-server.tail11891a.ts.net` już obsługuje CyclingForge na porcie 443
-(`/login`, `/dashboard`). Żeby uniknąć kolizji ścieżek, Lumora Api wystawiamy na
-osobnym porcie HTTPS tego samego hosta zamiast dzielić ścieżkę `/` z CyclingForge:
+Ten sam wzorzec co CyclingForge: Tailscale Funnel przekazuje cały ruch na hostname
+`k3s-server.tail11891a.ts.net` prosto do Traefika (wbudowany Ingress controller k3s), a to
+Traefik — na podstawie obiektów `Ingress` z różnych namespace'ów — rozdziela ruch dalej po
+ścieżce. Funnel wystawia jeden hostname na node, nie per-projekt subdomenę, więc każdy
+serwis dostaje własną ścieżkę zamiast własnej domeny.
 
-```
-tailscale serve --bg --https=8443 http://localhost:<nodePort-lub-clusterIP-forward>/
-```
+CyclingForge zajmuje `/` (bez `host:` w regule Ingress = łapie wszystko, co nie trafi
+gdzie indziej). Żeby uniknąć kolizji, `lumora-api` dostaje własny prefiks: `/lumora-api`.
+Ponieważ endpointy Api są zarejestrowane pod `/` (bez `PathBase`), `k8s/api.yaml` dokłada
+`Middleware` (`stripPrefix`) w Traefiku, który zdejmuje `/lumora-api` z requestu zanim ten
+trafi do poda — więc kod aplikacji nic o tym prefiksie nie wie, widzi zwykłe `/rooms`,
+`/clipboard`, `/hub/clipboard` itd. `Middleware` + `Ingress` są już w `k8s/api.yaml`
+(`apiVersion: traefik.containo.us/v1alpha1` — dopasowane do wersji Traefika w tym klastrze,
+sprawdzonej przez `kubectl api-resources | grep -i middleware`).
 
-W k3s najprościej przez `kubectl port-forward` na stałe (np. jako systemd unit) albo
-przez dodanie Service typu `NodePort` i wskazanie na niego w `tailscale serve`. Do ustalenia
-razem — na razie `k8s/api.yaml` definiuje `lumora-api` jako `ClusterIP`; jeśli chcesz to
-odsłonić przez Tailscale, powiedz i dopiszemy `NodePort` albo mały `nginx`/`socat` sidecar
-zamiast strzelać teraz w ciemno na konfigurację hosta.
+To wszystko idzie przez zwykły `kubectl apply` w pipeline — nic dodatkowego nie trzeba
+ręcznie konfigurować w samym Tailscale (Funnel już jest podpięty pod Traefika dla
+CyclingForge, więc obejmuje to też Lumorę automatycznie).
 
-Po wystawieniu klient Windows łączy się przez `https://k3s-server.tail11891a.ts.net:8443`
-zamiast lokalnego adresu — do zmiany w `src/Client.Desktop/appsettings.json`
-(`ServerBaseAddress`).
+Po pierwszym udanym deployu klient Windows powinien łączyć się przez
+`https://k3s-server.tail11891a.ts.net/lumora-api` zamiast lokalnego adresu — do zmiany
+w `src/Client.Desktop/appsettings.json` (`ServerBaseAddress`), dopiero gdy potwierdzimy,
+że endpoint faktycznie odpowiada z zewnątrz (patrz weryfikacja niżej).
 
 ## 5. Weryfikacja
 
 ```
 kubectl -n lumora get pods
 kubectl -n lumora logs deployment/lumora-api
-curl http://<pod-lub-service>/healthz
+curl http://<pod-lub-service>/healthz     # z hosta/wewnątrz klastra
+
+curl https://k3s-server.tail11891a.ts.net/lumora-api/healthz   # z zewnątrz, po deployu Ingressa
 ```
