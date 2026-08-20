@@ -1,0 +1,6 @@
+@Lumora.Server.Api_HostAddress = http://localhost:5108
+
+GET {{Lumora.Server.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
