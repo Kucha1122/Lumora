@@ -67,7 +67,9 @@ public partial class App : Application
 
         syncEngine = new ClipboardSyncEngine(clipboardBridge, api, realtime, activeRoomStore);
 
-        var hubUri = new Uri(serverBaseAddress, "/hubs/room");
+        // No leading "/" here for the same reason as LumoraApiClient's endpoints — it would
+        // discard a reverse-proxy path prefix in ServerBaseAddress (e.g. "/lumora-api").
+        var hubUri = new Uri(serverBaseAddress, "hubs/room");
         roomSession = new RoomSessionService(api, realtime, activeRoomStore, syncEngine, hubUri);
 
         BuildTrayIcon();
@@ -79,16 +81,30 @@ public partial class App : Application
 
     private static Uri LoadServerBaseAddress()
     {
+        const string fallback = "http://localhost:5108/";
+
         var settingsPath = Path.Combine(AppContext.BaseDirectory, "appsettings.json");
+        string address;
         if (!File.Exists(settingsPath))
         {
-            return new Uri("http://localhost:5108");
+            address = fallback;
+        }
+        else
+        {
+            using var stream = File.OpenRead(settingsPath);
+            using var document = JsonDocument.Parse(stream);
+            address = document.RootElement.GetProperty("ServerBaseAddress").GetString() ?? fallback;
         }
 
-        using var stream = File.OpenRead(settingsPath);
-        using var document = JsonDocument.Parse(stream);
-        var address = document.RootElement.GetProperty("ServerBaseAddress").GetString();
-        return new Uri(address ?? "http://localhost:5108");
+        // Must end with "/" — LumoraApiClient's and the SignalR hub's relative URIs merge
+        // against this path, and without a trailing slash the last path segment (e.g. a
+        // reverse-proxy prefix like "lumora-api") would be dropped as if it were a filename.
+        if (!address.EndsWith('/'))
+        {
+            address += "/";
+        }
+
+        return new Uri(address);
     }
 
     private void BuildTrayIcon()
