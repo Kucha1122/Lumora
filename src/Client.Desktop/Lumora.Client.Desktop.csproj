@@ -1,14 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net10.0</TargetFramework>
+    <!-- Windows-only for this iteration — see plan: macOS (Avalonia menubar/NSPasteboard) is a
+         later stage. An OS-specific TFM (rather than TargetFramework + SupportedOSPlatform)
+         is what actually makes the CA1416 platform-compatibility analyzer treat every P/Invoke
+         and Windows-only API call in this project as already guarded — the two properties
+         alone left every call site warning even though the whole project is Windows-only. -->
+    <TargetFramework>net10.0-windows7.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <!-- Windows-only for this iteration — see plan: macOS (Avalonia menubar/NSPasteboard) is a later stage. -->
-    <SupportedOSPlatformVersion>7.0</SupportedOSPlatformVersion>
-    <SupportedOSPlatform>windows</SupportedOSPlatform>
   </PropertyGroup>
 
   <ItemGroup>
