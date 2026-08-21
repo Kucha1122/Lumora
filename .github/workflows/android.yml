@@ -10,6 +10,7 @@ permissions:
 
 env:
   SERVER_BASE_ADDRESS: https://k3s-server.tail11891a.ts.net/lumora-api
+  BUILDER_IMAGE: lumora-android-builder:latest
 
 jobs:
   build-and-publish:
@@ -31,22 +32,32 @@ jobs:
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "version_code=${{ github.run_number }}" >> "$GITHUB_OUTPUT"
 
-      - name: Install Android workload
-        run: dotnet workload install android --skip-manifest-update
-
       - name: Decode signing keystore
         shell: bash
         run: echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > "$RUNNER_TEMP/lumora.keystore"
 
-      - name: Publish signed APK
+      # Everything .NET/Android/Java runs inside Docker — same reasoning as deploy.yml building
+      # the server via src/Api/Dockerfile — so the bare runner host needs nothing but Docker.
+      # Cached in the daemon's build cache across runs: only the first run pays for the
+      # `dotnet workload install android` download (~1-2 GB).
+      - name: Build Android builder image
+        run: docker build -f src/Client.Android/Dockerfile.ci -t $BUILDER_IMAGE .
+
+      - name: Publish signed APK (inside container)
         run: >
+          docker run --rm
+          -v "${{ github.workspace }}:/src"
+          -v "$RUNNER_TEMP/lumora.keystore:/tmp/lumora.keystore:ro"
+          -w /src
+          $BUILDER_IMAGE
           dotnet publish src/Client.Android/Lumora.Client.Android.csproj
           -f net10.0-android -c Release
+          -o /src/artifacts/android
           -p:ApplicationVersion=${{ steps.version.outputs.version_code }}
           -p:ApplicationDisplayVersion=${{ steps.version.outputs.version }}
           -p:AndroidPackageFormat=apk
           -p:AndroidKeyStore=true
-          -p:AndroidSigningKeyStore="$RUNNER_TEMP/lumora.keystore"
+          -p:AndroidSigningKeyStore=/tmp/lumora.keystore
           -p:AndroidSigningKeyAlias=${{ secrets.ANDROID_KEY_ALIAS }}
           -p:AndroidSigningKeyPass=${{ secrets.ANDROID_KEY_PASSWORD }}
           -p:AndroidSigningStorePass=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
@@ -55,9 +66,9 @@ jobs:
         id: apk
         shell: bash
         run: |
-          APK=$(find src/Client.Android/bin/Release -name "*-Signed.apk" | head -n1)
+          APK=$(find artifacts/android -name "*-Signed.apk" | head -n1)
           if [[ -z "$APK" ]]; then
-            APK=$(find src/Client.Android/bin/Release -name "*.apk" | head -n1)
+            APK=$(find artifacts/android -name "*.apk" | head -n1)
           fi
           echo "path=$APK" >> "$GITHUB_OUTPUT"
 
