@@ -100,6 +100,20 @@ public sealed class RoomSessionService(
         await ReconnectAsync(ct);
     }
 
+    /// <summary>Re-establishes realtime + sync for the already-active room without reloading
+    /// from secure storage — for shells without a foreground service (Android) that disconnect
+    /// on backgrounding and need to resume when they regain focus. See plan §Bez foreground service.</summary>
+    public Task ReconnectActiveRoomAsync(CancellationToken ct) =>
+        activeRoomStore.ActiveRoom is null ? Task.CompletedTask : ReconnectAsync(ct);
+
+    /// <summary>Drops the realtime connection and detaches clipboard sync without forgetting
+    /// the active room — the counterpart to <see cref="ReconnectActiveRoomAsync"/>.</summary>
+    public void DisconnectRealtime()
+    {
+        clipboardSync.Detach();
+        _ = realtime.DisconnectAsync();
+    }
+
     private async Task ReconnectAsync(CancellationToken ct)
     {
         var room = activeRoomStore.ActiveRoom!;

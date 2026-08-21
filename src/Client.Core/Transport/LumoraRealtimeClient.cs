@@ -41,6 +41,11 @@ public sealed class LumoraRealtimeClient : IAsyncDisposable
         await connection.StartAsync(ct);
     }
 
+    /// <summary>Drops the connection without disposing this client — used when a shell (e.g.
+    /// Android, backgrounding without a foreground service) wants to reconnect later via a
+    /// fresh ConnectAsync rather than tearing the whole object down.</summary>
+    public Task DisconnectAsync() => DisposeConnectionAsync();
+
     public async ValueTask DisposeAsync() => await DisposeConnectionAsync();
 
     private async Task DisposeConnectionAsync()
