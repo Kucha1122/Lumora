@@ -8,7 +8,7 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0
 WORKDIR /src
 
-RUN dotnet workload install android --skip-manifest-update
+RUN dotnet workload install maui-android --skip-manifest-update
 
 COPY Lumora.slnx ./
 COPY src/Client.Android/Lumora.Client.Android.csproj src/Client.Android/
