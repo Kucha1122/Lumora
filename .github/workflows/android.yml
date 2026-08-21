@@ -1,5 +1,17 @@
 name: Android
 
+# Builds a signed APK and publishes it to the Lumora server's /updates/android endpoints,
+# where the in-app updater and the /updates/android/install QR page pick it up.
+# GitHub-hosted runner, not self-hosted — same reasoning as CyclingForge's mobile build:
+# the heavy Android SDK/workload download stays off the self-hosted k3s box. Publishing is
+# a plain authenticated HTTPS call (curl), reachable from anywhere since the server is
+# exposed publicly through Tailscale Funnel — no self-hosted/VPN access needed here at all.
+#
+# windows-latest, not ubuntu-latest: the maui-android workload's Linux manifest points at a
+# Microsoft.NETCore.App.Runtime.Mono.linux-x64 package version that isn't published on
+# nuget.org (NU1102), breaking restore. Windows is also where this project was actually
+# developed and verified to build/run successfully.
+
 on:
   push:
     tags: ["android-v*"]
@@ -13,9 +25,20 @@ env:
 
 jobs:
   build-and-publish:
-    runs-on: self-hosted
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          # Pinned, not "10.0.x" — a floating version can resolve to an SDK feature band
+          # whose maui-android workload manifest points at NuGet runtime-pack versions that
+          # aren't actually published, breaking restore. 10.0.400 is the version this was
+          # verified to work with (mcr.microsoft.com/dotnet/sdk:10.0 at time of writing).
+          dotnet-version: "10.0.400"
+
+      - name: Install maui-android workload
+        run: dotnet workload install maui-android --skip-manifest-update
 
       - name: Resolve version
         id: version
@@ -31,9 +54,6 @@ jobs:
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "version_code=${{ github.run_number }}" >> "$GITHUB_OUTPUT"
 
-      - name: Install Android workload
-        run: dotnet workload install android --skip-manifest-update
-
       - name: Decode signing keystore
         shell: bash
         run: echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > "$RUNNER_TEMP/lumora.keystore"
@@ -42,11 +62,12 @@ jobs:
         run: >
           dotnet publish src/Client.Android/Lumora.Client.Android.csproj
           -f net10.0-android -c Release
+          -o artifacts/android
           -p:ApplicationVersion=${{ steps.version.outputs.version_code }}
           -p:ApplicationDisplayVersion=${{ steps.version.outputs.version }}
           -p:AndroidPackageFormat=apk
           -p:AndroidKeyStore=true
-          -p:AndroidSigningKeyStore="$RUNNER_TEMP/lumora.keystore"
+          -p:AndroidSigningKeyStore="${{ runner.temp }}/lumora.keystore"
           -p:AndroidSigningKeyAlias=${{ secrets.ANDROID_KEY_ALIAS }}
           -p:AndroidSigningKeyPass=${{ secrets.ANDROID_KEY_PASSWORD }}
           -p:AndroidSigningStorePass=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
@@ -55,9 +76,9 @@ jobs:
         id: apk
         shell: bash
         run: |
-          APK=$(find src/Client.Android/bin/Release -name "*-Signed.apk" | head -n1)
+          APK=$(find artifacts/android -name "*-Signed.apk" | head -n1)
           if [[ -z "$APK" ]]; then
-            APK=$(find src/Client.Android/bin/Release -name "*.apk" | head -n1)
+            APK=$(find artifacts/android -name "*.apk" | head -n1)
           fi
           echo "path=$APK" >> "$GITHUB_OUTPUT"
 
@@ -65,17 +86,33 @@ jobs:
         id: blob
         shell: bash
         run: |
-          BLOB_ID=$(curl -sf -X POST "$SERVER_BASE_ADDRESS/updates/android/blobs" \
+          echo "APK size: $(wc -c < "${{ steps.apk.outputs.path }}") bytes"
+          HTTP_CODE=$(curl -sS -o response.json -w "%{http_code}" -X POST "$SERVER_BASE_ADDRESS/updates/android/blobs" \
+            --http1.1 --max-time 300 \
             -H "X-Update-Publish-Secret: ${{ secrets.UPDATE_PUBLISH_SECRET }}" \
             -H "Content-Type: application/octet-stream" \
-            --data-binary @"${{ steps.apk.outputs.path }}" | tr -d '"')
+            --data-binary @"${{ steps.apk.outputs.path }}")
+          echo "HTTP status: $HTTP_CODE"
+          cat response.json
+          if [[ "$HTTP_CODE" != "200" ]]; then
+            echo "::error::Blob upload failed with status $HTTP_CODE"
+            exit 1
+          fi
+          BLOB_ID=$(tr -d '"' < response.json)
           echo "id=$BLOB_ID" >> "$GITHUB_OUTPUT"
 
       - name: Publish release metadata
         shell: bash
         run: |
-          SIZE=$(stat -c%s "${{ steps.apk.outputs.path }}")
-          curl -sf -X POST "$SERVER_BASE_ADDRESS/updates/android" \
+          SIZE=$(wc -c < "${{ steps.apk.outputs.path }}" | tr -d ' ')
+          HTTP_CODE=$(curl -sS -o response.json -w "%{http_code}" -X POST "$SERVER_BASE_ADDRESS/updates/android" \
+            --http1.1 --max-time 60 \
             -H "X-Update-Publish-Secret: ${{ secrets.UPDATE_PUBLISH_SECRET }}" \
             -H "Content-Type: application/json" \
-            -d "{\"version\":\"${{ steps.version.outputs.version }}\",\"versionCode\":${{ steps.version.outputs.version_code }},\"blobId\":\"${{ steps.blob.outputs.id }}\",\"sizeBytes\":$SIZE,\"releaseNotes\":null}"
+            -d "{\"version\":\"${{ steps.version.outputs.version }}\",\"versionCode\":${{ steps.version.outputs.version_code }},\"blobId\":\"${{ steps.blob.outputs.id }}\",\"sizeBytes\":$SIZE,\"releaseNotes\":null}")
+          echo "HTTP status: $HTTP_CODE"
+          cat response.json
+          if [[ "$HTTP_CODE" != "200" ]]; then
+            echo "::error::Publishing release metadata failed with status $HTTP_CODE"
+            exit 1
+          fi
