@@ -1,3 +1,5 @@
+using Lumora.Client.Core.Rooms;
+
 namespace Lumora.Client.Desktop.Rooms;
 
 /// <summary>
@@ -5,12 +7,18 @@ namespace Lumora.Client.Desktop.Rooms;
 /// instances on the same machine (e.g. during manual testing) must run with separate
 /// %AppData% profiles to get distinct ids — see plan §Weryfikacja, step 2.
 /// </summary>
-public static class DeviceIdentity
+public sealed class DeviceIdentity : IDeviceIdentity
 {
     private static readonly string FilePath = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Lumora", "device.id");
 
-    public static Guid GetOrCreate()
+    public Guid Id { get; } = GetOrCreate();
+
+    public string DisplayName => Environment.MachineName;
+
+    public string Platform => "Windows";
+
+    private static Guid GetOrCreate()
     {
         Directory.CreateDirectory(Path.GetDirectoryName(FilePath)!);
 
@@ -23,8 +31,4 @@ public static class DeviceIdentity
         File.WriteAllText(FilePath, id.ToString());
         return id;
     }
-
-    public static string DisplayName => Environment.MachineName;
-
-    public const string Platform = "Windows";
 }
