@@ -86,17 +86,33 @@ jobs:
         id: blob
         shell: bash
         run: |
-          BLOB_ID=$(curl -sf -X POST "$SERVER_BASE_ADDRESS/updates/android/blobs" \
+          echo "APK size: $(wc -c < "${{ steps.apk.outputs.path }}") bytes"
+          HTTP_CODE=$(curl -sS -o response.json -w "%{http_code}" -X POST "$SERVER_BASE_ADDRESS/updates/android/blobs" \
+            --http1.1 --max-time 300 \
             -H "X-Update-Publish-Secret: ${{ secrets.UPDATE_PUBLISH_SECRET }}" \
             -H "Content-Type: application/octet-stream" \
-            --data-binary @"${{ steps.apk.outputs.path }}" | tr -d '"')
+            --data-binary @"${{ steps.apk.outputs.path }}")
+          echo "HTTP status: $HTTP_CODE"
+          cat response.json
+          if [[ "$HTTP_CODE" != "200" ]]; then
+            echo "::error::Blob upload failed with status $HTTP_CODE"
+            exit 1
+          fi
+          BLOB_ID=$(tr -d '"' < response.json)
           echo "id=$BLOB_ID" >> "$GITHUB_OUTPUT"
 
       - name: Publish release metadata
         shell: bash
         run: |
           SIZE=$(wc -c < "${{ steps.apk.outputs.path }}" | tr -d ' ')
-          curl -sf -X POST "$SERVER_BASE_ADDRESS/updates/android" \
+          HTTP_CODE=$(curl -sS -o response.json -w "%{http_code}" -X POST "$SERVER_BASE_ADDRESS/updates/android" \
+            --http1.1 --max-time 60 \
             -H "X-Update-Publish-Secret: ${{ secrets.UPDATE_PUBLISH_SECRET }}" \
             -H "Content-Type: application/json" \
-            -d "{\"version\":\"${{ steps.version.outputs.version }}\",\"versionCode\":${{ steps.version.outputs.version_code }},\"blobId\":\"${{ steps.blob.outputs.id }}\",\"sizeBytes\":$SIZE,\"releaseNotes\":null}"
+            -d "{\"version\":\"${{ steps.version.outputs.version }}\",\"versionCode\":${{ steps.version.outputs.version_code }},\"blobId\":\"${{ steps.blob.outputs.id }}\",\"sizeBytes\":$SIZE,\"releaseNotes\":null}")
+          echo "HTTP status: $HTTP_CODE"
+          cat response.json
+          if [[ "$HTTP_CODE" != "200" ]]; then
+            echo "::error::Publishing release metadata failed with status $HTTP_CODE"
+            exit 1
+          fi
