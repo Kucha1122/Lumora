@@ -6,6 +6,11 @@ name: Android
 # the heavy Android SDK/workload download stays off the self-hosted k3s box. Publishing is
 # a plain authenticated HTTPS call (curl), reachable from anywhere since the server is
 # exposed publicly through Tailscale Funnel — no self-hosted/VPN access needed here at all.
+#
+# windows-latest, not ubuntu-latest: the maui-android workload's Linux manifest points at a
+# Microsoft.NETCore.App.Runtime.Mono.linux-x64 package version that isn't published on
+# nuget.org (NU1102), breaking restore. Windows is also where this project was actually
+# developed and verified to build/run successfully.
 
 on:
   push:
@@ -20,7 +25,7 @@ env:
 
 jobs:
   build-and-publish:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
 
@@ -90,7 +95,7 @@ jobs:
       - name: Publish release metadata
         shell: bash
         run: |
-          SIZE=$(stat -c%s "${{ steps.apk.outputs.path }}")
+          SIZE=$(wc -c < "${{ steps.apk.outputs.path }}" | tr -d ' ')
           curl -sf -X POST "$SERVER_BASE_ADDRESS/updates/android" \
             -H "X-Update-Publish-Secret: ${{ secrets.UPDATE_PUBLISH_SECRET }}" \
             -H "Content-Type: application/json" \
