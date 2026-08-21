@@ -3,31 +3,37 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Lumora.Client.Android.Pages.DrivePage"
              Title="Dysk">
-    <Grid RowDefinitions="Auto,Auto,*" Padding="16" RowSpacing="12">
+    <Grid RowDefinitions="Auto,Auto,*" Padding="16" RowSpacing="14">
 
-        <Label x:Name="RoomLabel" Grid.Row="0" TextColor="White" FontSize="14" />
-        <Button x:Name="UploadButton" Grid.Row="1" Text="Wyślij plik" Clicked="OnUploadClicked" />
+        <Label x:Name="RoomLabel" Grid.Row="0" TextColor="{StaticResource LumoraTextMuted}" FontSize="13" />
+        <Button x:Name="UploadButton" Grid.Row="1" Text="Wyślij plik" Clicked="OnUploadClicked"
+                HorizontalOptions="Start" />
 
         <CollectionView x:Name="FilesList" Grid.Row="2" SelectionMode="None">
+            <CollectionView.ItemsLayout>
+                <LinearItemsLayout Orientation="Vertical" ItemSpacing="8" />
+            </CollectionView.ItemsLayout>
             <CollectionView.ItemTemplate>
                 <DataTemplate>
                     <SwipeView>
                         <SwipeView.RightItems>
                             <SwipeItems>
-                                <SwipeItem Text="Usuń" BackgroundColor="#B23A48"
+                                <SwipeItem Text="Usuń" BackgroundColor="{StaticResource LumoraDanger}"
                                            Command="{Binding DeleteCommand}" />
                             </SwipeItems>
                         </SwipeView.RightItems>
-                        <Grid Padding="8" ColumnDefinitions="*,Auto" BackgroundColor="#262B52">
-                            <Label Grid.Column="0" Text="{Binding Description}" TextColor="White"
-                                   LineBreakMode="TailTruncation" />
-                            <Label Grid.Column="1" Text="Pobierz" TextColor="{StaticResource LumoraAccent}"
-                                   VerticalOptions="Center">
-                                <Label.GestureRecognizers>
-                                    <TapGestureRecognizer Command="{Binding DownloadCommand}" />
-                                </Label.GestureRecognizers>
-                            </Label>
-                        </Grid>
+                        <Border Style="{StaticResource Card}">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <Label Grid.Column="0" Text="{Binding Description}"
+                                       LineBreakMode="TailTruncation" VerticalOptions="Center" />
+                                <Label Grid.Column="1" Text="Pobierz" TextColor="{StaticResource LumoraAccent}"
+                                       FontAttributes="Bold" VerticalOptions="Center">
+                                    <Label.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding DownloadCommand}" />
+                                    </Label.GestureRecognizers>
+                                </Label>
+                            </Grid>
+                        </Border>
                     </SwipeView>
                 </DataTemplate>
             </CollectionView.ItemTemplate>

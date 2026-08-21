@@ -1,3 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
-  <circle cx="64" cy="64" r="40" fill="#F4B942" />
+  <!-- Two overlapping white circles — "your clipboard and the room's" (same geometry as
+       TrayIconFactory.DrawEclipse: centers at 0.375/0.625 * size, radius 0.215 * size). -->
+  <circle cx="80" cy="64" r="27.52" fill="#FFFFFF" fill-opacity="0.549" />
+  <circle cx="48" cy="64" r="27.52" fill="#FFFFFF" />
 </svg>

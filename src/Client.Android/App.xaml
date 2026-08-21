@@ -4,10 +4,77 @@
              x:Class="Lumora.Client.Android.App">
     <Application.Resources>
         <ResourceDictionary>
+            <!-- Same "Eclipse" palette as Client.Desktop's TrayIconFactory (PublicColor/
+                 PrivateColor) — kept in sync rather than inventing a separate mobile palette. -->
             <Color x:Key="LumoraBackground">#1B1F3B</Color>
-            <Color x:Key="LumoraAccent">#F4B942</Color>
-            <Style TargetType="Page">
+            <Color x:Key="LumoraSurface">#262B52</Color>
+            <Color x:Key="LumoraAccent">#8C7CF5</Color>
+            <Color x:Key="LumoraPrivateAccent">#D99248</Color>
+            <Color x:Key="LumoraTextMuted">#9AA0C3</Color>
+            <Color x:Key="LumoraDanger">#E0596B</Color>
+
+            <Style TargetType="Page" ApplyToDerivedTypes="True">
                 <Setter Property="BackgroundColor" Value="{StaticResource LumoraBackground}" />
+            </Style>
+
+            <Style TargetType="Shell" ApplyToDerivedTypes="True">
+                <Setter Property="Shell.BackgroundColor" Value="{StaticResource LumoraBackground}" />
+                <Setter Property="Shell.ForegroundColor" Value="White" />
+                <Setter Property="Shell.TitleColor" Value="White" />
+                <Setter Property="Shell.TabBarBackgroundColor" Value="{StaticResource LumoraSurface}" />
+                <Setter Property="Shell.TabBarTitleColor" Value="{StaticResource LumoraAccent}" />
+                <Setter Property="Shell.TabBarUnselectedColor" Value="{StaticResource LumoraTextMuted}" />
+            </Style>
+
+            <Style TargetType="Label">
+                <Setter Property="TextColor" Value="White" />
+                <Setter Property="FontFamily" Value="OpenSansRegular" />
+            </Style>
+
+            <Style x:Key="SectionTitle" TargetType="Label">
+                <Setter Property="TextColor" Value="{StaticResource LumoraTextMuted}" />
+                <Setter Property="FontSize" Value="13" />
+                <Setter Property="FontAttributes" Value="Bold" />
+                <Setter Property="CharacterSpacing" Value="1" />
+            </Style>
+
+            <Style TargetType="Button">
+                <Setter Property="BackgroundColor" Value="{StaticResource LumoraAccent}" />
+                <Setter Property="TextColor" Value="{StaticResource LumoraBackground}" />
+                <Setter Property="FontAttributes" Value="Bold" />
+                <Setter Property="CornerRadius" Value="10" />
+                <Setter Property="Padding" Value="16,10" />
+            </Style>
+
+            <Style x:Key="SecondaryButton" TargetType="Button">
+                <Setter Property="BackgroundColor" Value="{StaticResource LumoraSurface}" />
+                <Setter Property="TextColor" Value="White" />
+                <Setter Property="FontAttributes" Value="None" />
+                <Setter Property="CornerRadius" Value="10" />
+                <Setter Property="Padding" Value="16,10" />
+            </Style>
+
+            <Style TargetType="Entry">
+                <Setter Property="TextColor" Value="White" />
+                <Setter Property="PlaceholderColor" Value="{StaticResource LumoraTextMuted}" />
+                <Setter Property="BackgroundColor" Value="{StaticResource LumoraSurface}" />
+            </Style>
+
+            <Style TargetType="CheckBox">
+                <Setter Property="Color" Value="{StaticResource LumoraAccent}" />
+            </Style>
+
+            <!-- Card container for list rows and grouped content — every page's rows should
+                 use this instead of a bare Grid with a hardcoded background color. -->
+            <Style x:Key="Card" TargetType="Border">
+                <Setter Property="BackgroundColor" Value="{StaticResource LumoraSurface}" />
+                <Setter Property="Stroke" Value="Transparent" />
+                <Setter Property="StrokeShape" Value="RoundRectangle 14" />
+                <Setter Property="Padding" Value="14,12" />
+            </Style>
+
+            <Style TargetType="CollectionView">
+                <Setter Property="BackgroundColor" Value="Transparent" />
             </Style>
         </ResourceDictionary>
     </Application.Resources>

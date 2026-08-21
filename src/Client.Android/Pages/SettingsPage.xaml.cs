@@ -20,7 +20,7 @@ public partial class SettingsPage : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
-        ServerAddressBox.Text = ServerSettings.LoadBaseAddress().ToString();
+        ServerAddressLabel.Text = ServerSettings.LoadBaseAddress().ToString();
         UpdateStatus();
         VersionLabel.Text = $"Lumora {AppInfo.Current.VersionString} (build {AppInfo.Current.BuildString})";
         await CheckForUpdateAsync();
@@ -32,11 +32,10 @@ public partial class SettingsPage : ContentPage
         {
             var check = await updateService.CheckAsync(CancellationToken.None);
             pendingRelease = check.Release;
-            UpdateStatusLabel.IsVisible = check.IsAvailable;
-            UpdateButton.IsVisible = check.IsAvailable;
+            UpdateCard.IsVisible = check.IsAvailable;
             if (check.IsAvailable)
             {
-                UpdateStatusLabel.Text = $"Dostępna aktualizacja: {check.Release!.Version} (build {check.Release.VersionCode})";
+                UpdateStatusLabel.Text = $"Dostępna wersja {check.Release!.Version} (build {check.Release.VersionCode})";
             }
         }
         catch
@@ -73,23 +72,6 @@ public partial class SettingsPage : ContentPage
         var room = activeRoom.ActiveRoom;
         StatusLabel.Text = room is null
             ? "Nie połączono z żadną przestrzenią"
-            : $"Aktywna przestrzeń: {room.DisplayName}{(room.IsPrivate ? " 🔒" : "")}";
-    }
-
-    private async void OnSaveClicked(object? sender, EventArgs e)
-    {
-        var address = ServerAddressBox.Text?.Trim();
-        if (string.IsNullOrWhiteSpace(address))
-        {
-            return;
-        }
-
-        ServerSettings.SaveBaseAddress(address);
-
-        // HttpClient.BaseAddress is set once at DI composition (MauiProgram.cs) and
-        // LumoraApiClient wraps that instance immutably — changing it at runtime would mean
-        // rebuilding the whole service graph. Simplest correct behavior for v1: ask for a
-        // restart, same as changing appsettings.json requires on Client.Desktop.
-        await DisplayAlert(null, "Zapisano. Uruchom aplikację ponownie, aby zastosować nowy adres.", "OK");
+            : $"{room.DisplayName}{(room.IsPrivate ? " 🔒" : " 🌐")}";
     }
 }

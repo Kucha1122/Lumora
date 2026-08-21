@@ -4,38 +4,48 @@
              x:Class="Lumora.Client.Android.Pages.RoomsPage"
              Title="Przestrzenie">
     <ScrollView>
-        <Grid Padding="16" RowDefinitions="Auto,Auto,Auto,*" RowSpacing="12">
+        <Grid Padding="16" RowDefinitions="Auto,Auto,Auto,*" RowSpacing="14">
 
-            <HorizontalStackLayout Grid.Row="0" Spacing="12">
+            <HorizontalStackLayout Grid.Row="0" Spacing="10">
                 <Button x:Name="JoinModeButton" Text="Dołącz" Clicked="OnJoinModeClicked" />
-                <Button x:Name="CreateModeButton" Text="Utwórz nową" Clicked="OnCreateModeClicked" />
+                <Button x:Name="CreateModeButton" Text="Utwórz nową" Style="{StaticResource SecondaryButton}"
+                        Clicked="OnCreateModeClicked" />
             </HorizontalStackLayout>
 
-            <Label x:Name="ErrorText" Grid.Row="1" TextColor="#B23A48" IsVisible="False" />
+            <Label x:Name="ErrorText" Grid.Row="1" TextColor="{StaticResource LumoraDanger}" IsVisible="False" />
 
-            <VerticalStackLayout x:Name="CreatePanel" Grid.Row="2" Spacing="10" IsVisible="False">
-                <Entry x:Name="SlugBox" Placeholder="slug (np. dom, praca)" />
-                <Entry x:Name="DisplayNameBox" Placeholder="Nazwa wyświetlana (opcjonalnie)" />
-                <CheckBox x:Name="PrivateCheckBox" CheckedChanged="OnPrivateCheckedChanged" />
-                <Label Text="Przestrzeń prywatna (hasło)" TextColor="White" />
-                <Entry x:Name="CreatePasswordBox" Placeholder="Hasło" IsPassword="True" IsVisible="False" />
-                <Button x:Name="CreateSubmitButton" Text="Utwórz i dołącz" Clicked="OnCreateSubmitClicked" />
-            </VerticalStackLayout>
+            <Border x:Name="CreatePanel" Grid.Row="2" Style="{StaticResource Card}" IsVisible="False">
+                <VerticalStackLayout Spacing="10">
+                    <Entry x:Name="SlugBox" Placeholder="slug (np. dom, praca)" />
+                    <Entry x:Name="DisplayNameBox" Placeholder="Nazwa wyświetlana (opcjonalnie)" />
+                    <HorizontalStackLayout Spacing="8">
+                        <CheckBox x:Name="PrivateCheckBox" CheckedChanged="OnPrivateCheckedChanged" />
+                        <Label Text="Przestrzeń prywatna (hasło)" VerticalOptions="Center" />
+                    </HorizontalStackLayout>
+                    <Entry x:Name="CreatePasswordBox" Placeholder="Hasło" IsPassword="True" IsVisible="False" />
+                    <Button x:Name="CreateSubmitButton" Text="Utwórz i dołącz" Clicked="OnCreateSubmitClicked" />
+                </VerticalStackLayout>
+            </Border>
 
             <CollectionView x:Name="RoomsList" Grid.Row="3" SelectionMode="None">
+                <CollectionView.ItemsLayout>
+                    <LinearItemsLayout Orientation="Vertical" ItemSpacing="8" />
+                </CollectionView.ItemsLayout>
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
-                        <Grid Padding="10" ColumnDefinitions="Auto,*,Auto" BackgroundColor="#262B52">
-                            <Label Grid.Column="0" Text="{Binding Icon}" VerticalOptions="Center" />
-                            <Label Grid.Column="1" Text="{Binding DisplayName}" TextColor="White"
-                                   VerticalOptions="Center" Margin="8,0,0,0" />
-                            <Label Grid.Column="2" Text="{Binding StatusText}" TextColor="{StaticResource LumoraAccent}"
-                                   VerticalOptions="Center">
-                                <Label.GestureRecognizers>
-                                    <TapGestureRecognizer Command="{Binding JoinCommand}" />
-                                </Label.GestureRecognizers>
-                            </Label>
-                        </Grid>
+                        <Border Style="{StaticResource Card}">
+                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                <Label Grid.Column="0" Text="{Binding Icon}" VerticalOptions="Center" FontSize="18" />
+                                <Label Grid.Column="1" Text="{Binding DisplayName}"
+                                       VerticalOptions="Center" Margin="10,0,0,0" />
+                                <Label Grid.Column="2" Text="{Binding StatusText}" TextColor="{StaticResource LumoraAccent}"
+                                       FontAttributes="Bold" VerticalOptions="Center">
+                                    <Label.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding JoinCommand}" />
+                                    </Label.GestureRecognizers>
+                                </Label>
+                            </Grid>
+                        </Border>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>
