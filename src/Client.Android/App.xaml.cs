@@ -1,3 +1,4 @@
+using Lumora.Client.Android.Clipboard;
 using Lumora.Client.Core.Rooms;
 
 namespace Lumora.Client.Android;
@@ -7,10 +8,15 @@ public partial class App : Application
     private readonly RoomSessionService roomSession;
     private bool initialized;
 
-    public App(RoomSessionService roomSession)
+    public App(RoomSessionService roomSession, AndroidClipboardBridge clipboardBridge)
     {
         InitializeComponent();
         this.roomSession = roomSession;
+
+        // Without this, AndroidClipboardBridge.manager stays null forever and every read
+        // (TryCaptureCurrentClipboard, used by "Wyślij schowek" and the quick tile) silently
+        // reports an empty clipboard — mirrors Client.Desktop's clipboardBridge.Start() call.
+        clipboardBridge.Start();
     }
 
     protected override Window CreateWindow(IActivationState? activationState)

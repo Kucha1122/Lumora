@@ -1,3 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
-  <rect width="128" height="128" fill="#1B1F3B" />
+  <!-- Same "Eclipse" tile background as Client.Desktop's TrayIconFactory.DrawEclipse
+       app-tile variant (gradient rounded square, cornerRadius = 0.22 * size),
+       colors sampled from the shipped app.ico gradient. -->
+  <defs>
+    <linearGradient id="tile" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7868EC" />
+      <stop offset="100%" stop-color="#5243C3" />
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="128" height="128" rx="28.16" fill="url(#tile)" />
 </svg>

@@ -3,38 +3,42 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Lumora.Client.Android.Pages.ClipboardPage"
              Title="Schowek">
-    <Grid RowDefinitions="Auto,Auto,*" Padding="16" RowSpacing="12">
+    <Grid RowDefinitions="Auto,Auto,*" Padding="16" RowSpacing="14">
 
-        <Label x:Name="RoomLabel" Grid.Row="0" TextColor="White" FontSize="14" />
+        <Label x:Name="RoomLabel" Grid.Row="0" TextColor="{StaticResource LumoraTextMuted}" FontSize="13" />
 
-        <HorizontalStackLayout Grid.Row="1" Spacing="12">
+        <HorizontalStackLayout Grid.Row="1" Spacing="10">
             <Button x:Name="SendClipboardButton" Text="Wyślij schowek" Clicked="OnSendClipboardClicked" />
-            <Button x:Name="ClearButton" Text="Wyczyść historię" Clicked="OnClearClicked" />
+            <Button x:Name="ClearButton" Text="Wyczyść" Style="{StaticResource SecondaryButton}" Clicked="OnClearClicked" />
         </HorizontalStackLayout>
 
         <CollectionView x:Name="HistoryList" Grid.Row="2" SelectionMode="None">
+            <CollectionView.ItemsLayout>
+                <LinearItemsLayout Orientation="Vertical" ItemSpacing="8" />
+            </CollectionView.ItemsLayout>
             <CollectionView.ItemTemplate>
                 <DataTemplate>
                     <SwipeView>
                         <SwipeView.RightItems>
                             <SwipeItems>
-                                <SwipeItem Text="Usuń" BackgroundColor="#B23A48"
+                                <SwipeItem Text="Usuń" BackgroundColor="{StaticResource LumoraDanger}"
                                            Command="{Binding DeleteCommand}" />
                             </SwipeItems>
                         </SwipeView.RightItems>
-                        <Grid Padding="8" ColumnDefinitions="*,Auto"
-                              BackgroundColor="#262B52">
-                            <VerticalStackLayout Grid.Column="0" Spacing="2">
-                                <Label Text="{Binding Preview}" TextColor="White" LineBreakMode="TailTruncation" />
-                                <Label Text="{Binding SubText}" TextColor="#9AA0C3" FontSize="12" />
-                            </VerticalStackLayout>
-                            <Label Grid.Column="1" Text="Kopiuj" TextColor="{StaticResource LumoraAccent}"
-                                   VerticalOptions="Center">
-                                <Label.GestureRecognizers>
-                                    <TapGestureRecognizer Command="{Binding CopyCommand}" />
-                                </Label.GestureRecognizers>
-                            </Label>
-                        </Grid>
+                        <Border Style="{StaticResource Card}">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <VerticalStackLayout Grid.Column="0" Spacing="2">
+                                    <Label Text="{Binding Preview}" LineBreakMode="TailTruncation" />
+                                    <Label Text="{Binding SubText}" TextColor="{StaticResource LumoraTextMuted}" FontSize="12" />
+                                </VerticalStackLayout>
+                                <Label Grid.Column="1" Text="Kopiuj" TextColor="{StaticResource LumoraAccent}"
+                                       FontAttributes="Bold" VerticalOptions="Center">
+                                    <Label.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding CopyCommand}" />
+                                    </Label.GestureRecognizers>
+                                </Label>
+                            </Grid>
+                        </Border>
                     </SwipeView>
                 </DataTemplate>
             </CollectionView.ItemTemplate>
