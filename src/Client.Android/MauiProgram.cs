@@ -1,6 +1,7 @@
 using Lumora.Client.Android.Clipboard;
 using Lumora.Client.Android.Pages;
 using Lumora.Client.Android.Rooms;
+using Lumora.Client.Android.Updates;
 using Lumora.Client.Core.Rooms;
 using Lumora.Client.Core.Sync;
 using Lumora.Client.Core.Transport;
@@ -52,6 +53,8 @@ public static class MauiProgram
             sp.GetRequiredService<ClipboardSyncEngine>(),
             sp.GetRequiredService<IDeviceIdentity>(),
             ServerSettings.HubUri(sp.GetRequiredService<HttpClient>().BaseAddress!)));
+
+        services.AddSingleton<UpdateService>();
 
         services.AddSingleton<AppShell>();
         services.AddTransient<ClipboardPage>();
