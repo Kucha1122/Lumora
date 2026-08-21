@@ -26,7 +26,11 @@ jobs:
 
       - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: "10.0.x"
+          # Pinned, not "10.0.x" — a floating version can resolve to an SDK feature band
+          # whose maui-android workload manifest points at NuGet runtime-pack versions that
+          # aren't actually published, breaking restore. 10.0.400 is the version this was
+          # verified to work with (mcr.microsoft.com/dotnet/sdk:10.0 at time of writing).
+          dotnet-version: "10.0.400"
 
       - name: Install maui-android workload
         run: dotnet workload install maui-android --skip-manifest-update
