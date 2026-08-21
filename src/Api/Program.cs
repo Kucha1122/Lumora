@@ -13,6 +13,11 @@ using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Kestrel's default MaxRequestBodySize (30,000,000 B) is below both DriveEndpoints' and
+// UpdateEndpoints' own 512 MB blob-size ceiling, so anything above ~28.6 MiB was silently
+// rejected with 413 before those endpoints' own size checks ever ran. Raised to match.
+builder.WebHost.ConfigureKestrel(options => options.Limits.MaxRequestBodySize = 512L * 1024 * 1024);
+
 builder.Services.AddOpenApi();
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
