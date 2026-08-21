@@ -91,11 +91,19 @@ public static class UpdateEndpoints
     /// api.qrserver.com, pointed at this same server's /latest/apk — no server-side QR
     /// encoding dependency, and no secret ever appears in the URL.
     /// </summary>
-    private static async Task<ContentHttpResult> InstallPage(HttpRequest request, ISender sender, CancellationToken ct)
+    private static async Task<ContentHttpResult> InstallPage(ISender sender, CancellationToken ct)
     {
         var release = await sender.Send(new GetLatestAndroidReleaseQuery(), ct);
 
-        var apkUrl = $"{request.Scheme}://{request.Host}{request.PathBase}/updates/android/latest/apk";
+        // Not derived from HttpRequest: Traefik's stripPrefix middleware removes "/lumora-api"
+        // and terminates TLS before the pod ever sees the request, so request.Scheme/Host/
+        // PathBase would build a bare-http, prefix-less URL that resolves to whatever else is
+        // mounted at "/" on this host (CyclingForge) instead of Lumora. Same public address
+        // already hardcoded client-side in Client.Desktop/appsettings.json and
+        // Client.Android/ServerSettings.cs — kept consistent with those rather than guessed.
+        const string publicBaseUrl = "https://k3s-server.tail11891a.ts.net/lumora-api";
+
+        var apkUrl = $"{publicBaseUrl}/updates/android/latest/apk";
         var encodedApkUrl = WebUtility.UrlEncode(apkUrl);
 
         var body = release is null
