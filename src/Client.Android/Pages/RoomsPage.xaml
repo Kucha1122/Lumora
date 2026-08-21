@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Lumora.Client.Android.Pages.RoomsPage"
+             Title="Przestrzenie">
+    <ScrollView>
+        <Grid Padding="16" RowDefinitions="Auto,Auto,Auto,*" RowSpacing="12">
+
+            <HorizontalStackLayout Grid.Row="0" Spacing="12">
+                <Button x:Name="JoinModeButton" Text="Dołącz" Clicked="OnJoinModeClicked" />
+                <Button x:Name="CreateModeButton" Text="Utwórz nową" Clicked="OnCreateModeClicked" />
+            </HorizontalStackLayout>
+
+            <Label x:Name="ErrorText" Grid.Row="1" TextColor="#B23A48" IsVisible="False" />
+
+            <VerticalStackLayout x:Name="CreatePanel" Grid.Row="2" Spacing="10" IsVisible="False">
+                <Entry x:Name="SlugBox" Placeholder="slug (np. dom, praca)" />
+                <Entry x:Name="DisplayNameBox" Placeholder="Nazwa wyświetlana (opcjonalnie)" />
+                <CheckBox x:Name="PrivateCheckBox" CheckedChanged="OnPrivateCheckedChanged" />
+                <Label Text="Przestrzeń prywatna (hasło)" TextColor="White" />
+                <Entry x:Name="CreatePasswordBox" Placeholder="Hasło" IsPassword="True" IsVisible="False" />
+                <Button x:Name="CreateSubmitButton" Text="Utwórz i dołącz" Clicked="OnCreateSubmitClicked" />
+            </VerticalStackLayout>
+
+            <CollectionView x:Name="RoomsList" Grid.Row="3" SelectionMode="None">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Padding="10" ColumnDefinitions="Auto,*,Auto" BackgroundColor="#262B52">
+                            <Label Grid.Column="0" Text="{Binding Icon}" VerticalOptions="Center" />
+                            <Label Grid.Column="1" Text="{Binding DisplayName}" TextColor="White"
+                                   VerticalOptions="Center" Margin="8,0,0,0" />
+                            <Label Grid.Column="2" Text="{Binding StatusText}" TextColor="{StaticResource LumoraAccent}"
+                                   VerticalOptions="Center">
+                                <Label.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding JoinCommand}" />
+                                </Label.GestureRecognizers>
+                            </Label>
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </Grid>
+    </ScrollView>
+</ContentPage>

@@ -6,6 +6,9 @@
   <Folder Name="/src/Application/">
     <Project Path="src/Application/Lumora.Server.Application.csproj" />
   </Folder>
+  <Folder Name="/src/Client.Android/">
+    <Project Path="src/Client.Android/Lumora.Client.Android.csproj" />
+  </Folder>
   <Folder Name="/src/Client.Core/">
     <Project Path="src/Client.Core/Lumora.Client.Core.csproj" />
   </Folder>

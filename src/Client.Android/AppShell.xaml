@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+       xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+       xmlns:pages="clr-namespace:Lumora.Client.Android.Pages"
+       x:Class="Lumora.Client.Android.AppShell"
+       Title="Lumora"
+       FlyoutBehavior="Disabled">
+
+    <TabBar>
+        <ShellContent Title="Schowek" ContentTemplate="{DataTemplate pages:ClipboardPage}" />
+        <ShellContent Title="Dysk" ContentTemplate="{DataTemplate pages:DrivePage}" />
+        <ShellContent Title="Przestrzenie" ContentTemplate="{DataTemplate pages:RoomsPage}" />
+        <ShellContent Title="Ustawienia" ContentTemplate="{DataTemplate pages:SettingsPage}" />
+    </TabBar>
+
+</Shell>

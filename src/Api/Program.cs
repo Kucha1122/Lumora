@@ -98,6 +98,7 @@ app.MapGet("/healthz", () => Results.Ok());
 app.MapRoomEndpoints();
 app.MapClipboardEndpoints();
 app.MapDriveEndpoints();
+app.MapUpdateEndpoints();
 app.MapHub<ClipboardHub>(ClipboardHub.Route);
 
 app.Run();

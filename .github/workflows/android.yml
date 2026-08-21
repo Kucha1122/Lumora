@@ -1,0 +1,81 @@
+name: Android
+
+on:
+  push:
+    tags: ["android-v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  SERVER_BASE_ADDRESS: https://k3s-server.tail11891a.ts.net/lumora-api
+
+jobs:
+  build-and-publish:
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve version
+        id: version
+        shell: bash
+        run: |
+          # android-v1.2.3 -> "1.2.3"; falls back to the short SHA outside a tag push
+          # (workflow_dispatch), which still lets you push an APK to test the pipeline itself.
+          if [[ "${{ github.ref_type }}" == "tag" ]]; then
+            VERSION="${GITHUB_REF_NAME#android-v}"
+          else
+            VERSION="0.0.0-${GITHUB_SHA::7}"
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "version_code=${{ github.run_number }}" >> "$GITHUB_OUTPUT"
+
+      - name: Install Android workload
+        run: dotnet workload install android --skip-manifest-update
+
+      - name: Decode signing keystore
+        shell: bash
+        run: echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > "$RUNNER_TEMP/lumora.keystore"
+
+      - name: Publish signed APK
+        run: >
+          dotnet publish src/Client.Android/Lumora.Client.Android.csproj
+          -f net10.0-android -c Release
+          -p:ApplicationVersion=${{ steps.version.outputs.version_code }}
+          -p:ApplicationDisplayVersion=${{ steps.version.outputs.version }}
+          -p:AndroidPackageFormat=apk
+          -p:AndroidKeyStore=true
+          -p:AndroidSigningKeyStore="$RUNNER_TEMP/lumora.keystore"
+          -p:AndroidSigningKeyAlias=${{ secrets.ANDROID_KEY_ALIAS }}
+          -p:AndroidSigningKeyPass=${{ secrets.ANDROID_KEY_PASSWORD }}
+          -p:AndroidSigningStorePass=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+
+      - name: Locate APK
+        id: apk
+        shell: bash
+        run: |
+          APK=$(find src/Client.Android/bin/Release -name "*-Signed.apk" | head -n1)
+          if [[ -z "$APK" ]]; then
+            APK=$(find src/Client.Android/bin/Release -name "*.apk" | head -n1)
+          fi
+          echo "path=$APK" >> "$GITHUB_OUTPUT"
+
+      - name: Upload APK blob
+        id: blob
+        shell: bash
+        run: |
+          BLOB_ID=$(curl -sf -X POST "$SERVER_BASE_ADDRESS/updates/android/blobs" \
+            -H "X-Update-Publish-Secret: ${{ secrets.UPDATE_PUBLISH_SECRET }}" \
+            -H "Content-Type: application/octet-stream" \
+            --data-binary @"${{ steps.apk.outputs.path }}" | tr -d '"')
+          echo "id=$BLOB_ID" >> "$GITHUB_OUTPUT"
+
+      - name: Publish release metadata
+        shell: bash
+        run: |
+          SIZE=$(stat -c%s "${{ steps.apk.outputs.path }}")
+          curl -sf -X POST "$SERVER_BASE_ADDRESS/updates/android" \
+            -H "X-Update-Publish-Secret: ${{ secrets.UPDATE_PUBLISH_SECRET }}" \
+            -H "Content-Type: application/json" \
+            -d "{\"version\":\"${{ steps.version.outputs.version }}\",\"versionCode\":${{ steps.version.outputs.version_code }},\"blobId\":\"${{ steps.blob.outputs.id }}\",\"sizeBytes\":$SIZE,\"releaseNotes\":null}"

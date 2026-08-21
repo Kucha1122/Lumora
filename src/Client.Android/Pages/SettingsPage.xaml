@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Lumora.Client.Android.Pages.SettingsPage"
+             Title="Ustawienia">
+    <VerticalStackLayout Padding="16" Spacing="14">
+        <Label Text="Adres serwera" TextColor="White" />
+        <Entry x:Name="ServerAddressBox" />
+        <Button x:Name="SaveButton" Text="Zapisz i połącz ponownie" Clicked="OnSaveClicked" />
+
+        <Label x:Name="StatusLabel" TextColor="{StaticResource LumoraAccent}" />
+
+        <BoxView HeightRequest="1" Color="#3A4070" Margin="0,10,0,10" />
+
+        <Label x:Name="VersionLabel" TextColor="#9AA0C3" FontSize="12" />
+
+        <Label x:Name="UpdateStatusLabel" TextColor="{StaticResource LumoraAccent}" IsVisible="False" />
+        <Button x:Name="UpdateButton" Text="Pobierz i zainstaluj aktualizację" Clicked="OnUpdateClicked" IsVisible="False" />
+    </VerticalStackLayout>
+</ContentPage>

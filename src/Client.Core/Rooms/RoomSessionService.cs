@@ -1,10 +1,9 @@
 using Lumora.Client.Core.Crypto;
-using Lumora.Client.Core.Rooms;
 using Lumora.Client.Core.Sync;
 using Lumora.Client.Core.Transport;
 using Lumora.Contracts.Rooms;
 
-namespace Lumora.Client.Desktop.Rooms;
+namespace Lumora.Client.Core.Rooms;
 
 /// <summary>
 /// Orchestrates joining/switching rooms: derives keys from a password, calls the server,
@@ -16,10 +15,9 @@ public sealed class RoomSessionService(
     LumoraRealtimeClient realtime,
     ActiveRoomStore activeRoomStore,
     ClipboardSyncEngine clipboardSync,
+    IDeviceIdentity deviceIdentity,
     Uri hubUri)
 {
-    private readonly Guid deviceId = DeviceIdentity.GetOrCreate();
-
     public event Action<RoomProfile?>? ActiveRoomChanged
     {
         add => activeRoomStore.ActiveRoomChanged += value;
@@ -85,7 +83,7 @@ public sealed class RoomSessionService(
         }
 
         var response = await api.JoinRoomAsync(
-            slug, new JoinRoomRequest(authKey, DeviceIdentity.DisplayName, DeviceIdentity.Platform), ct);
+            slug, new JoinRoomRequest(authKey, deviceIdentity.DisplayName, deviceIdentity.Platform), ct);
 
         if (response is null)
         {
@@ -102,12 +100,26 @@ public sealed class RoomSessionService(
         await ReconnectAsync(ct);
     }
 
+    /// <summary>Re-establishes realtime + sync for the already-active room without reloading
+    /// from secure storage — for shells without a foreground service (Android) that disconnect
+    /// on backgrounding and need to resume when they regain focus. See plan §Bez foreground service.</summary>
+    public Task ReconnectActiveRoomAsync(CancellationToken ct) =>
+        activeRoomStore.ActiveRoom is null ? Task.CompletedTask : ReconnectAsync(ct);
+
+    /// <summary>Drops the realtime connection and detaches clipboard sync without forgetting
+    /// the active room — the counterpart to <see cref="ReconnectActiveRoomAsync"/>.</summary>
+    public void DisconnectRealtime()
+    {
+        clipboardSync.Detach();
+        _ = realtime.DisconnectAsync();
+    }
+
     private async Task ReconnectAsync(CancellationToken ct)
     {
         var room = activeRoomStore.ActiveRoom!;
 
         var response = await api.JoinRoomAsync(
-            room.Slug, new JoinRoomRequest(room.AuthKey, DeviceIdentity.DisplayName, DeviceIdentity.Platform), ct);
+            room.Slug, new JoinRoomRequest(room.AuthKey, deviceIdentity.DisplayName, deviceIdentity.Platform), ct);
 
         if (response is null)
         {
@@ -132,6 +144,6 @@ public sealed class RoomSessionService(
         api.SetAccessToken(response.AccessToken);
         await realtime.ConnectAsync(hubUri, response.AccessToken, ct);
         clipboardSync.Detach();
-        await clipboardSync.AttachAsync(deviceId, ct);
+        await clipboardSync.AttachAsync(deviceIdentity.Id, ct);
     }
 }

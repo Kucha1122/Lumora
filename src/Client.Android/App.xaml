@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Application xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Lumora.Client.Android.App">
+    <Application.Resources>
+        <ResourceDictionary>
+            <Color x:Key="LumoraBackground">#1B1F3B</Color>
+            <Color x:Key="LumoraAccent">#F4B942</Color>
+            <Style TargetType="Page">
+                <Setter Property="BackgroundColor" Value="{StaticResource LumoraBackground}" />
+            </Style>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

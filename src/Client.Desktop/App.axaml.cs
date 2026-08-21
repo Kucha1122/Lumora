@@ -24,6 +24,7 @@ public partial class App : Application
     private ClipboardSyncEngine syncEngine = null!;
     private TrayIcon trayIcon = null!;
     private NativeMenuItem currentRoomMenuItem = null!;
+    private DeviceIdentity deviceIdentity = null!;
     private Guid deviceId;
 
     private readonly WindowSlot<ClipboardHistoryWindow> historySlot = new();
@@ -48,7 +49,8 @@ public partial class App : Application
     private async Task ComposeAndStartAsync()
     {
         var serverBaseAddress = LoadServerBaseAddress();
-        deviceId = DeviceIdentity.GetOrCreate();
+        deviceIdentity = new DeviceIdentity();
+        deviceId = deviceIdentity.Id;
 
         var httpClient = new HttpClient { BaseAddress = serverBaseAddress };
         api = new LumoraApiClient(httpClient);
@@ -70,7 +72,7 @@ public partial class App : Application
         // No leading "/" here for the same reason as LumoraApiClient's endpoints — it would
         // discard a reverse-proxy path prefix in ServerBaseAddress (e.g. "/lumora-api").
         var hubUri = new Uri(serverBaseAddress, "hubs/room");
-        roomSession = new RoomSessionService(api, realtime, activeRoomStore, syncEngine, hubUri);
+        roomSession = new RoomSessionService(api, realtime, activeRoomStore, syncEngine, deviceIdentity, hubUri);
 
         BuildTrayIcon();
         activeRoomStore.ActiveRoomChanged += _ => UpdateTrayAppearance();

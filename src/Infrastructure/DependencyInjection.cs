@@ -5,6 +5,7 @@ using Lumora.Server.Infrastructure.Persistence;
 using Lumora.Server.Infrastructure.Persistence.Repositories;
 using Lumora.Server.Infrastructure.Realtime;
 using Lumora.Server.Infrastructure.Storage;
+using Lumora.Server.Infrastructure.Updates;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,11 +21,13 @@ public static class DependencyInjection
 
         services.Configure<BlobStoreOptions>(configuration.GetSection("BlobStore"));
         services.Configure<RoomAuthOptions>(configuration.GetSection("RoomAuth"));
+        services.Configure<UpdatePublishOptions>(configuration.GetSection("UpdatePublish"));
 
         services.AddScoped<IRoomRepository, RoomRepository>();
         services.AddScoped<IClipboardRepository, ClipboardRepository>();
         services.AddScoped<IDriveRepository, DriveRepository>();
         services.AddScoped<IDeviceRepository, DeviceRepository>();
+        services.AddScoped<IUpdateReleaseRepository, UpdateReleaseRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         services.AddSingleton<IBlobStore, LocalFileSystemBlobStore>();
